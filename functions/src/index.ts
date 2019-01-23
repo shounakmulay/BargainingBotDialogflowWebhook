@@ -10,17 +10,17 @@ admin.initializeApp()
 
 //Cloud Function
 export const dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
+
     const agent = new WebhookClient({ request, response })
 
-
     const credentials = auth(request)
-    // The "check" function will typically be against your user store
+
     if (!credentials || !logic.check(credentials.name, credentials.pass)) {
         response.statusCode = 401
         response.setHeader('WWW-Authenticate', 'Basic Auth')
         response.end('Access denied')
     } else {
-        // response.end('Access granted')
+        // Access Granted
 
         function trigFirstWelcome() {
             //trigger first welcome intent 
@@ -39,10 +39,13 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
             //parameters to send = responseText
         }
 
-        function OrderDrinks() {
+        async function OrderDrinks() {
             //get parameters from request
-            //call ML engine with those params
             //check prediction and call appropriate intent
+            const data = request.body
+            const parameters = data.parameters
+            const resToSend = await logic.getResToSend(parameters)
+            response.json(resToSend)
         }
 
         function test() {
@@ -55,6 +58,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
         const intentMap = new Map()
         intentMap.set('FirstWelcomeTrigger', trigFirstWelcome)
         intentMap.set('FirstWelcomeRegUserTrigger', trigFirstWelcomeRegUser)
+        intentMap.set('OrderDrinks', OrderDrinks)
         intentMap.set('test', test)
         agent.handleRequest(intentMap)
 
