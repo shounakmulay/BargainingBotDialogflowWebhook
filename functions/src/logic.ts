@@ -40,99 +40,122 @@ export function check(name, pass) {
 //return json
 export async function getResToSend(parameters) {
 
-    const currentCost = parameters.currentCost.amount
-    const userOffer = parameters.cost.amount
-    const quantity = parameters.quantity
-    const minCost = getMinCost()//calculate or get from database
-    const maxCost = getMaxCost()//calculate or get from database
-    const isRegular = getIsRegular()//get from database?
-    const drink = { isBeer: 0, isVodka: 0, isWhisky: 0, isWine: 0 }
+    let instanceArray: any[][]
+    function setInstanceArray() {
+        const currentCost = parameters.currentCost.amount
+        const userOffer = parameters.cost.amount
+        const quantity = parameters.quantity
+        const minCost = getMinCost()
+        const maxCost = getMaxCost()
+        const isRegular = getIsRegular()
+        const drink = { isBeer: 0, isVodka: 0, isWhisky: 0, isWine: 0 }
+        const drinkName = {
+            isAbsolut: 0, isBlendersPride: 0, isBlendersReserve: 0, isBudweiser: 0, isChenin: 0, isCorona: 0, isKetelOne: 0, isKingfisher: 0,
+            isMagnum: 0, isRed: 0, isRedSpice: 0, isRose: 0, isSatori: 0, isSignature: 0, isSmirnoff: 0, isSmirnoffFLV: 0, isTeachers: 0, isVat69: 0,
+            isWhite: 0, isHeineken: 0
+        }
+        const day = { isMon: 0, isTue: 0, isWed: 0, isThu: 0, isFri: 0, isSat: 0, isSun: 0 }
 
-    const drinkName = {
-        isAbsolut: 0, isBlendersPride: 0, isBlendersReserve: 0, isBudweiser: 0, isChenin: 0, isCorona: 0, isKetelOne: 0, isKingfisher: 0,
-        isMagnum: 0, isRed: 0, isRedSpice: 0, isRose: 0, isSatori: 0, isSignature: 0, isSmirnoff: 0, isSmirnoffFLV: 0, isTeachers: 0, isVat69: 0,
-        isWhite: 0, isHeineken: 0
-    }
-    const day = { isMon: 0, isTue: 0, isWed: 0, isThu: 0, isFri: 0, isSat: 0, isSun: 0 }
+        Object.preventExtensions(drink)
+        Object.preventExtensions(drinkName)
+        Object.preventExtensions(day)
 
-    const instanceArray = [[currentCost, minCost, maxCost, userOffer, isRegular, quantity,
-        drink.isBeer, drink.isVodka, drink.isWhisky, drink.isWine, drinkName.isAbsolut, drinkName.isBlendersPride, drinkName.isBlendersReserve,
-        drinkName.isBudweiser, drinkName.isChenin, drinkName.isCorona, drinkName.isKetelOne, drinkName.isKingfisher, drinkName.isMagnum, drinkName.isRed, drinkName.isRedSpice,
-        drinkName.isRose, drinkName.isSatori, drinkName.isSignature, drinkName.isSmirnoff, drinkName.isSmirnoffFLV, drinkName.isTeachers, drinkName.isVat69, drinkName.isWhite,
-        drinkName.isHeineken, day.isMon, day.isTue, day.isWed, day.isThu, day.isFri, day.isSat, day.isSun]]
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
 
-    Object.preventExtensions(drink)
-    Object.preventExtensions(drinkName)
-    Object.preventExtensions(day)
-    Object.preventExtensions(instanceArray)
+        function getMinCost(): number {
+            return (currentCost - currentCost * ((getRandomInt(8, 16)) / 100))
+        }
 
-    function getMinCost() { }
+        function getMaxCost(): number {
+            return (currentCost + currentCost * ((getRandomInt(5, 12)) / 100))
+        }
 
-    function getMaxCost() { }
+        function getIsRegular() {
+            if (parameters.regular === 1) {
+                return 1
+            } else {
+                return 0
+            }
+        }
 
-    function getIsRegular() { }
+        function setDrink() {
+            if (parameters.beer !== "") {
+                drink.isBeer = 1
+                setDrinkName(parameters.beer as string)
+            } else if (parameters.whisky !== "") {
+                drink.isWhisky = 1
+                setDrinkName(parameters.whisky as string)
+            } else if (parameters.vodka !== "") {
+                drink.isVodka = 1
+                setDrinkName(parameters.vodka as string)
+            } else {
+                drink.isWine = 1
+                setDrinkName(parameters.wine as string)
+            }
+        }
 
-    function setDay() {
-        const d = new Date()
+        function setDrinkName(name: string) {
+            if (drinkName.hasOwnProperty(name)) {
+                drinkName[name] = 1
+            }
+        }
 
-        const utc = d.getTime() + (d.getTimezoneOffset() * 60000)
-        const nd = new Date(utc + (3600000 * 5.5))
-        const weekday = new Array(7);
-        weekday[0] = "isSun";
-        weekday[1] = "isMon";
-        weekday[2] = "isTue";
-        weekday[3] = "isWed";
-        weekday[4] = "isThu";
-        weekday[5] = "isFri";
-        weekday[6] = "isSat";
+        function setDay() {
+            const d = new Date()
 
-        const currentDay: string = weekday[nd.getDay()];
-        if (day.hasOwnProperty(currentDay)) {
-            day[currentDay] = 1
+            const utc = d.getTime() + (d.getTimezoneOffset() * 60000)
+            const nd = new Date(utc + (3600000 * 5.5))
+            const weekday = new Array(7);
+            weekday[0] = "isSun";
+            weekday[1] = "isMon";
+            weekday[2] = "isTue";
+            weekday[3] = "isWed";
+            weekday[4] = "isThu";
+            weekday[5] = "isFri";
+            weekday[6] = "isSat";
+
+            const currentDay: string = weekday[nd.getDay()];
+            if (day.hasOwnProperty(currentDay)) {
+                day[currentDay] = 1
+            }
+
+
         }
 
 
+        setDrink()
+        setDay()
+
+
+        const predArray = [[currentCost, minCost, maxCost, userOffer, isRegular, quantity,
+            drink.isBeer, drink.isVodka, drink.isWhisky, drink.isWine, drinkName.isAbsolut, drinkName.isBlendersPride, drinkName.isBlendersReserve,
+            drinkName.isBudweiser, drinkName.isChenin, drinkName.isCorona, drinkName.isKetelOne, drinkName.isKingfisher, drinkName.isMagnum, drinkName.isRed, drinkName.isRedSpice,
+            drinkName.isRose, drinkName.isSatori, drinkName.isSignature, drinkName.isSmirnoff, drinkName.isSmirnoffFLV, drinkName.isTeachers, drinkName.isVat69, drinkName.isWhite,
+            drinkName.isHeineken, day.isMon, day.isTue, day.isWed, day.isThu, day.isFri, day.isSat, day.isSun]]
+        Object.preventExtensions(predArray)
+
+        instanceArray = predArray
+
     }
 
-
-    function setDrink() {
-        if (parameters.beer !== "") {
-            drink.isBeer = 1
-            setDrinkName(parameters.beer as string)
-        } else if (parameters.whisky !== "") {
-            drink.isWhisky = 1
-            setDrinkName(parameters.whisky as string)
-        } else if (parameters.vodka !== "") {
-            drink.isVodka = 1
-            setDrinkName(parameters.vodka as string)
-        } else {
-            drink.isWine = 1
-            setDrinkName(parameters.wine as string)
-        }
-    }
-
-
-    function setDrinkName(name: string) {
-        if (drinkName.hasOwnProperty(name)) {
-            drinkName[name] = 1
-        }
-    }
-
-
-
-
+    setInstanceArray()
 
     const data = {
         "model": MODEL_NAME,
-        "instances": [[250, 120, 300, 250, 1, 5, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]
+        // "instances": [[250, 120, 300, 250, 1, 5, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+        //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]
+        "instances": instanceArray
     }
 
     const prediction: any = await model.getPrediction(data)
-    // prediction = JSON.stringify(prediction.data)
-    // const a = JSON.parse(prediction)
+
     const predtictedCost = prediction.predictions[0].outputs[0]
 
+    //check ml response and decide which intent to call
     return buildJSONres("testevent", "data", predtictedCost)
 
 

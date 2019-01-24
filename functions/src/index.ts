@@ -1,6 +1,6 @@
 //Initialize and import
 import * as functions from 'firebase-functions';
-const logic = require("./logic")
+import * as logic from "./logic"
 const { WebhookClient } = require('dialogflow-fulfillment')
 const admin = require('firebase-admin')
 const auth = require('basic-auth')
