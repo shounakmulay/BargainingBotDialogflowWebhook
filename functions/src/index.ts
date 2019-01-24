@@ -56,8 +56,12 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
         async function counterReject() {
             //increase the quantity and make new offer
             //call counter offer again
-            // 
-
+            // const paramater = request.body.queryResult.outputContexts[1].parameters
+            // let quantity = paramater.quantity
+            // quantity = (quantity + ((quantity * Math.random()) + 1))
+            // paramater.quantity = quantity
+            // const resJSON = await logic.getResJSON(paramater)
+            // response.json(resJSON)
         }
 
         function makeNewOffer() {
