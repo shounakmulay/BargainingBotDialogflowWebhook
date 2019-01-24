@@ -28,22 +28,16 @@ export function check(name, pass) {
     return valid
 }
 
-/* TODO
-* Determine which functions need to be made async
-* Decide methods to get min max cost and isregular
-* Simplify function call to single front facing function
-* Make appropriate calls to proper intents and design bargaining flow
-*/
-
 //parse the input params. Call ML engine
 //build json res calling appropriate intent
 //return json
-export async function getResToSend(parameters) {
-
+export async function getResJSON(parameters) {
+    const currentCost = parameters.currentCost.amount
+    const userOffer = parameters.cost.amount
     let instanceArray: any[][]
     function setInstanceArray() {
-        const currentCost = parameters.currentCost.amount
-        const userOffer = parameters.cost.amount
+
+
         const quantity = parameters.quantity
         const minCost = getMinCost()
         const maxCost = getMaxCost()
@@ -60,11 +54,6 @@ export async function getResToSend(parameters) {
         Object.preventExtensions(drinkName)
         Object.preventExtensions(day)
 
-        function getRandomInt(min, max) {
-            min = Math.ceil(min);
-            max = Math.floor(max);
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
 
         function getMinCost(): number {
             return (currentCost - currentCost * ((getRandomInt(8, 16)) / 100))
@@ -146,19 +135,44 @@ export async function getResToSend(parameters) {
 
     const data = {
         "model": MODEL_NAME,
-        // "instances": [[250, 120, 300, 250, 1, 5, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
-        //     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]]
         "instances": instanceArray
     }
 
     const prediction: any = await model.getPrediction(data)
 
-    const predtictedCost = prediction.predictions[0].outputs[0]
+    const predtictedCost = Math.round(prediction.predictions[0].outputs[0])
 
     //check ml response and decide which intent to call
-    return buildJSONres("testevent", "data", predtictedCost)
+    if (getLowLim(predtictedCost, 2, 5) < userOffer && userOffer < getHighLim(predtictedCost, 2, 5)) {
+        //accept useroffer
+        //accept intent
+        return buildJSONres("OrderDrinks-AcceptEvent", "acceptedCost", userOffer)
+    } else if (userOffer > predtictedCost) {
+        //low amount offered by bot!
+        //counter low intent
+        return buildJSONres("OrderDrinks-OfferLowEvnet", "predictedCost", predtictedCost)
+    } else if (userOffer < getLowLim(currentCost, 35, 40)) {
+        //taunt user for too low offer
+        //taunt intent
+        return buildJSONres("OrderDrinks-TauntEvent", "predictedCost", predtictedCost)
+    } else {
+        //counter
+        //counter intent
+        return buildJSONres("OrderDrinks-CounterEvent", "predictedCost", predtictedCost)
+    }
 
 
+}
 
+function getLowLim(amount, min, max) {
+    return (amount - (amount * ((getRandomInt(min, max)) / 100)))
+}
+function getHighLim(amount, min, max) {
+    return (amount + (amount * ((getRandomInt(min, max)) / 100)))
+}
 
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }

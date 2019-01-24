@@ -44,8 +44,8 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
             //check prediction and call appropriate intent
             const data = request.body
             const parameters = data.parameters
-            const resToSend = await logic.getResToSend(parameters)
-            response.json(resToSend)
+            const resJSON = await logic.getResJSON(parameters)
+            response.json(resJSON)
         }
 
         function test() {
