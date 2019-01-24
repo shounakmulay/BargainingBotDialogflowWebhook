@@ -4,8 +4,10 @@ const USERNAME = 'dialogflowbargainingbot'
 const PASSWORD = 'u$wPoC4Kb49yUB#Za%vV5dx6AwwWBlXD'
 const MODEL_NAME = "price_prediction"
 
+//construct json object
 export function buildJSONres(eventname: String, param: string, value1) {
-    //construct json object
+
+    //console.log("build json start")
     const responseObj = {
         "followupEventInput": {
             "name": eventname,
@@ -14,11 +16,11 @@ export function buildJSONres(eventname: String, param: string, value1) {
             }
         }
     }
-
+    //console.log("build json end")
     return responseObj
 }
 
-
+//authentication check
 export function check(name, pass) {
     let valid = true
     // Simple method to prevent short-circut and use timing-safe compare
@@ -32,11 +34,15 @@ export function check(name, pass) {
 //build json res calling appropriate intent
 //return json
 export async function getResJSON(parameters) {
+    //console.log("getResJSON started")
     const currentCost = parameters.currentCost.amount
+    //console.log(currentCost + "- currentCost")
     const userOffer = parameters.cost.amount
     let instanceArray: any[][]
-    function setInstanceArray() {
 
+    //initialize parameteres, set appropriate values and return an array in proper format
+    function setInstanceArray() {
+        //console.log("setInstanceArray start")
 
         const quantity = parameters.quantity
         const minCost = getMinCost()
@@ -53,7 +59,7 @@ export async function getResJSON(parameters) {
         Object.preventExtensions(drink)
         Object.preventExtensions(drinkName)
         Object.preventExtensions(day)
-
+        //console.log("variables and dict declared")
 
         function getMinCost(): number {
             return (currentCost - currentCost * ((getRandomInt(8, 16)) / 100))
@@ -72,6 +78,7 @@ export async function getResJSON(parameters) {
         }
 
         function setDrink() {
+            //console.log("setDrinks start")
             if (parameters.beer !== "") {
                 drink.isBeer = 1
                 setDrinkName(parameters.beer as string)
@@ -85,6 +92,7 @@ export async function getResJSON(parameters) {
                 drink.isWine = 1
                 setDrinkName(parameters.wine as string)
             }
+            //console.log("setDrinks end")
         }
 
         function setDrinkName(name: string) {
@@ -94,6 +102,7 @@ export async function getResJSON(parameters) {
         }
 
         function setDay() {
+            //console.log("setDay start")
             const d = new Date()
 
             const utc = d.getTime() + (d.getTimezoneOffset() * 60000)
@@ -112,23 +121,24 @@ export async function getResJSON(parameters) {
                 day[currentDay] = 1
             }
 
-
+            //console.log("setDay end")
         }
 
 
         setDrink()
         setDay()
 
-
+        //console.log("paramaters set. Init predArray")
         const predArray = [[currentCost, minCost, maxCost, userOffer, isRegular, quantity,
             drink.isBeer, drink.isVodka, drink.isWhisky, drink.isWine, drinkName.isAbsolut, drinkName.isBlendersPride, drinkName.isBlendersReserve,
             drinkName.isBudweiser, drinkName.isChenin, drinkName.isCorona, drinkName.isKetelOne, drinkName.isKingfisher, drinkName.isMagnum, drinkName.isRed, drinkName.isRedSpice,
             drinkName.isRose, drinkName.isSatori, drinkName.isSignature, drinkName.isSmirnoff, drinkName.isSmirnoffFLV, drinkName.isTeachers, drinkName.isVat69, drinkName.isWhite,
             drinkName.isHeineken, day.isMon, day.isTue, day.isWed, day.isThu, day.isFri, day.isSat, day.isSun]]
         Object.preventExtensions(predArray)
+        //console.log("predArray init done")
 
         instanceArray = predArray
-
+        //console.log("setInstanceArray done")
     }
 
     setInstanceArray()
@@ -137,27 +147,31 @@ export async function getResJSON(parameters) {
         "model": MODEL_NAME,
         "instances": instanceArray
     }
-
+    //console.log("await get prediction")
     const prediction: any = await model.getPrediction(data)
-
+    //console.log("get predicted cost")
     const predtictedCost = Math.round(prediction.predictions[0].outputs[0])
-
+    //console.log("if else for intent call.")
     //check ml response and decide which intent to call
     if (getLowLim(predtictedCost, 2, 5) < userOffer && userOffer < getHighLim(predtictedCost, 2, 5)) {
         //accept useroffer
         //accept intent
+        //console.log("getResJSON end")
         return buildJSONres("OrderDrinks-AcceptEvent", "acceptedCost", userOffer)
     } else if (userOffer > predtictedCost) {
         //low amount offered by bot!
         //counter low intent
-        return buildJSONres("OrderDrinks-OfferLowEvnet", "predictedCost", predtictedCost)
+        //console.log("getResJSON end")
+        return buildJSONres("OrderDrinks-OfferLowEvent", "predictedCost", predtictedCost)
     } else if (userOffer < getLowLim(currentCost, 35, 40)) {
         //taunt user for too low offer
         //taunt intent
+        //console.log("getResJSON end")
         return buildJSONres("OrderDrinks-TauntEvent", "predictedCost", predtictedCost)
     } else {
         //counter
         //counter intent
+        //console.log("getResJSON end")
         return buildJSONres("OrderDrinks-CounterEvent", "predictedCost", predtictedCost)
     }
 
@@ -172,7 +186,7 @@ function getHighLim(amount, min, max) {
 }
 
 function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    const minval = Math.ceil(min);
+    const maxval = Math.floor(max);
+    return Math.floor(Math.random() * (maxval - minval + 1)) + min;
 }

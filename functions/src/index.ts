@@ -22,31 +22,51 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
     } else {
         // Access Granted
 
-        function trigFirstWelcome() {
-            //trigger first welcome intent 
-            const res = logic.buildJSONres("FirstWelcomeEvent", "userName", "Rishabh")//remove hardcoded string, get name dynamically
-            response.json(res)
-        }
-
-        function trigFirstWelcomeRegUser() {
-            //trigger first welcome reg user intent
-            const res = logic.buildJSONres("FirstWelcomeRegUserEvent", "userName", "Shounak")//remove hardcoded string, get name dynamically
-            response.json(res)
-        }
-
-        function OrderFoodConfirmation() {
+        function OrderFoodAck() {
             //trigger OrderFood intent
             //parameters to send = responseText
         }
 
+        //get parameters from request
+        //check prediction and call appropriate intent
         async function OrderDrinks() {
-            //get parameters from request
-            //check prediction and call appropriate intent
-            const data = request.body
-            const parameters = data.parameters
+            //console.log("OrderDrinks: start")
+            const parameters = request.body.queryResult.parameters
+            //console.log("got params" + parameters)
+            //console.log("call to getResJSON")
             const resJSON = await logic.getResJSON(parameters)
+            //console.log("getResJSON done" + resJSON)
             response.json(resJSON)
         }
+
+        function placeDrinksOrder() {
+            //send response of placed order
+            //update databases
+            //trigger for order drinks counter yes
+            //order drinks accept yes
+            //order drinks offer low yes
+            //order drinks taunt accept
+        }
+
+        /**
+         * how to handle the counter
+         * add paramater in json?
+         * after counter limit call make new offer intent
+         */
+        async function counterReject() {
+            //increase the quantity and make new offer
+            //call counter offer again
+            // 
+
+        }
+
+        function makeNewOffer() {
+            //trigger for order drinks taunt new offer
+            //order drinks offer low no
+            //order drinks accept no
+            //notify android to change ui for new offer?
+        }
+
 
         function test() {
             agent.add('testing')
@@ -56,10 +76,9 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
 
         //Map functions with intents
         const intentMap = new Map()
-        intentMap.set('FirstWelcomeTrigger', trigFirstWelcome)
-        intentMap.set('FirstWelcomeRegUserTrigger', trigFirstWelcomeRegUser)
         intentMap.set('OrderDrinks', OrderDrinks)
         intentMap.set('test', test)
+        intentMap.set('OrderDrinks - Counter -no', counterReject)
         agent.handleRequest(intentMap)
 
 

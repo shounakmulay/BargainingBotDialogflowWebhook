@@ -3,6 +3,7 @@ const ml = google.ml('v1')
 
 export async function getPrediction(data) {
     //get prediction
+    //console.log("getprediction start")
     const instances = data.instances
     const model = data.model
 
@@ -18,7 +19,7 @@ export async function getPrediction(data) {
             instances
         }
     } as any)
-
+    //console.log("getprediction end")
     return preds.data
 
 }
