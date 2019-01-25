@@ -1,18 +1,22 @@
+import * as functions from 'firebase-functions'
 import * as model from './model'
 const compare = require('tsscmp')
-const USERNAME = 'dialogflowbargainingbot'
-const PASSWORD = 'u$wPoC4Kb49yUB#Za%vV5dx6AwwWBlXD'
+const USERNAME = functions.config().webhookauth.key
+const PASSWORD = functions.config().webhookauth.id
 const MODEL_NAME = "price_prediction"
 
 //construct json object
-export function buildJSONres(eventname: String, param: string, value1) {
+export function buildJSONres(eventname: String, param: string, value1, param2: string = "", value2: any = "", param3: string = "", value3 = "") {
 
     //console.log("build json start")
     const responseObj = {
         "followupEventInput": {
             "name": eventname,
             "parameters": {
-                [param]: value1
+                [param]: value1,
+                [param2]: value2,
+                [param3]: value3
+
             }
         }
     }
@@ -36,15 +40,17 @@ export function check(name, pass) {
 export async function getResJSON(parameters) {
     //console.log("getResJSON started")
     const currentCost = parameters.currentCost.amount
+    const quantityOld = parameters.quantityOld
     //console.log(currentCost + "- currentCost")
     const userOffer = parameters.cost.amount
+    const quantity = parameters.quantity
     let instanceArray: any[][]
 
     //initialize parameteres, set appropriate values and return an array in proper format
     function setInstanceArray() {
         //console.log("setInstanceArray start")
 
-        const quantity = parameters.quantity
+
         const minCost = getMinCost()
         const maxCost = getMaxCost()
         const isRegular = getIsRegular()
@@ -172,7 +178,7 @@ export async function getResJSON(parameters) {
         //counter
         //counter intent
         //console.log("getResJSON end")
-        return buildJSONres("OrderDrinks-CounterEvent", "predictedCost", predtictedCost)
+        return buildJSONres("OrderDrinks-CounterEvent", "predictedCost", predtictedCost, "quantity", quantity, "quantityOld", quantityOld)
     }
 
 
