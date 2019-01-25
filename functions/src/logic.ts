@@ -6,7 +6,7 @@ const PASSWORD = functions.config().webhookauth.id
 const MODEL_NAME = "price_prediction"
 
 //construct json object
-export function buildJSONres(eventname: String, param: string, value1, param2: string = "", value2: any = "", param3: string = "", value3 = "") {
+export async function buildJSONres(eventname: String, param: string = "", value1: any = "", param2: string = "", value2: any = "", param3: string = "", value3: any = "") {
 
     //console.log("build json start")
     const responseObj = {
@@ -163,22 +163,22 @@ export async function getResJSON(parameters) {
         //accept useroffer
         //accept intent
         //console.log("getResJSON end")
-        return buildJSONres("OrderDrinks-AcceptEvent", "acceptedCost", userOffer)
+        return await buildJSONres("OrderDrinks-AcceptEvent", "acceptedCost", userOffer)
     } else if (userOffer > predtictedCost) {
         //low amount offered by bot!
         //counter low intent
         //console.log("getResJSON end")
-        return buildJSONres("OrderDrinks-OfferLowEvent", "predictedCost", predtictedCost)
+        return await buildJSONres("OrderDrinks-OfferLowEvent", "predictedCost", predtictedCost)
     } else if (userOffer < getLowLim(currentCost, 35, 40)) {
         //taunt user for too low offer
         //taunt intent
         //console.log("getResJSON end")
-        return buildJSONres("OrderDrinks-TauntEvent", "predictedCost", predtictedCost)
+        return await buildJSONres("OrderDrinks-TauntEvent", "predictedCost", predtictedCost)
     } else {
         //counter
         //counter intent
         //console.log("getResJSON end")
-        return buildJSONres("OrderDrinks-CounterEvent", "predictedCost", predtictedCost, "quantity", quantity, "quantityOld", quantityOld)
+        return await buildJSONres("OrderDrinks-CounterEvent", "predictedCost", predtictedCost, "quantity", quantity, "quantityOld", quantityOld)
     }
 
 

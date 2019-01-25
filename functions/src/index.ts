@@ -59,31 +59,36 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
          * add paramater in json?
          * after counter limit call make new offer intent
          */
+        //increase the quantity and make new offer
+        //call counter offer again
         async function counterReject() {
-            //increase the quantity and make new offer
-            //call counter offer again
+            const displayName = request.body.queryResult.intent.displayName
 
-            const queryResult = request.body.queryResult
+            switch (displayName) {
+                case "OrderDrinks - Counter - no": {
+                    const queryResult = request.body.queryResult
 
-            const parameter = getParameters(queryResult)
+                    const parameter = getParameters(queryResult)
 
-            let quantity = parameter.quantity
-            parameter.quantityOld = quantity
-            quantity = Math.round((quantity + ((quantity * Math.random()) + 1)))
-            parameter.quantity = quantity
+                    let quantity = parameter.quantity
+                    parameter.quantityOld = quantity
+                    quantity = Math.round((quantity + ((quantity * Math.random()) + 1)))
+                    parameter.quantity = quantity
 
-            const resJSON = await logic.getResJSON(parameter)
-            response.json(resJSON)
-        }
 
-        async function counterReject2() {
-            const queryResult = request.body.queryResult
-            const paramater = getParameters(queryResult)
-            const quantityOld = paramater.quantityOld
-            paramater.quantity = quantityOld
-            paramater.quantityOld = ""
-            const resJSON = await logic.getResJSON(paramater)
-            response.json(resJSON)
+                    response.json(await logic.getResJSON(parameter))
+                }
+                    break;
+                case "OrderDrinks - Counter - no - no": {
+                    const queryResult = request.body.queryResult
+                    const paramater = getParameters(queryResult)
+                    const quantityOld = paramater.quantityOld
+                    paramater.quantity = quantityOld
+                    paramater.quantityOld = ""
+
+                    response.json(await logic.getResJSON(paramater))
+                }
+            }
         }
 
         function getParameters(queryResult) {
@@ -95,16 +100,40 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
             }
         }
 
-        function makeNewOffer() {
-            /**
-             * trigger for
-             * order drinks taunt new offer 
-             * order drinks offer low no 
-             * order drinks accept no 
-             * order drinks counter no no no
-             * notify android to change ui for new offer?
-             */
+        /**
+         * notify android to change ui for new offer?
+         */
+        async function makeNewOffer() {
+
+            const displayName = request.body.queryResult.intent.displayName
+            switch (displayName) {
+                case "OrderDrinks - Taunt - NewOffer": {//working
+
+                    response.json(await logic.buildJSONres("MakeNewOfferEvent", "tauntResponse", "Make a new offer!"))
+                }
+                    break;
+                case "OrderDrinks - Counter - no - no - no": {//working
+
+                    response.json(await logic.buildJSONres("MakeNewOfferEvent"))
+                }
+                    break;
+                case "OrderDrinks - Accept - no": {//working
+
+                    response.json(await logic.buildJSONres("MakeNewOfferEvent"))
+                }
+                    break;
+                case "OrderDrinks - Offer Low - no": {//working
+
+                    response.json(await logic.buildJSONres("MakeNewOfferEvent"))
+                }
+                    break;
+            }
+
+
+
         }
+
+
 
 
         function test() {
@@ -118,7 +147,13 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
         intentMap.set('OrderDrinks', OrderDrinks)
         intentMap.set('test', test)
         intentMap.set('OrderDrinks - Counter - no', counterReject)
-        intentMap.set('OrderDrinks - Counter - no - no', counterReject2)
+        intentMap.set('OrderDrinks - Counter - no - no', counterReject)
+        intentMap.set('OrderDrinks - Offer Low - no', makeNewOffer)
+        intentMap.set('OrderDrinks - Accept - no', makeNewOffer)
+        intentMap.set('OrderDrinks - Counter - no - no - no', makeNewOffer)
+        intentMap.set('OrderDrinks - Taunt - NewOffer', makeNewOffer)
+
+
         agent.handleRequest(intentMap)
 
 
