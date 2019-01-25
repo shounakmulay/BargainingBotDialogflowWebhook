@@ -30,17 +30,17 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
         //get parameters from request
         //check prediction and call appropriate intent
         async function OrderDrinks() {
-            //console.log("OrderDrinks: start")
+
             const parameters = request.body.queryResult.parameters
-            //console.log("got params" + parameters)
-            //console.log("call to getResJSON")
+
             const resJSON = await logic.getResJSON(parameters)
-            //console.log("getResJSON done" + resJSON)
+
             response.json(resJSON)
         }
 
         function placeDrinksOrder() {
             /**
+             * TODO
              * send response of placed order 
              * update databases 
              * trigger for 
@@ -54,11 +54,6 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
         }
 
         const OUTPUT_CONTEXT_NAME = "projects/priceprediction-8026a/agent/sessions/3aae4089-88cb-9f23-b240-54545ca1bed5/contexts/orderdrinks-followup"
-        /**
-         * how to handle the counter
-         * add paramater in json?
-         * after counter limit call make new offer intent
-         */
         //increase the quantity and make new offer
         //call counter offer again
         async function counterReject() {
@@ -69,7 +64,11 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
                     const queryResult = request.body.queryResult
 
                     const parameter = getParameters(queryResult)
-
+                    /**
+                     * TODO 
+                     * higher quantity sometimes returns higher value
+                     * check logic
+                     */
                     let quantity = parameter.quantity
                     parameter.quantityOld = quantity
                     quantity = Math.round((quantity + ((quantity * Math.random()) + 1)))
@@ -101,7 +100,9 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
         }
 
         /**
+         * TODO
          * notify android to change ui for new offer?
+         * reset contexts
          */
         async function makeNewOffer() {
 
@@ -134,18 +135,13 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
         }
 
 
-
-
-        function test() {
-            agent.add('testing')
+        function orderDrinksCancel() {
+            //reset all contexts
         }
-
-
 
         //Map functions with intents
         const intentMap = new Map()
         intentMap.set('OrderDrinks', OrderDrinks)
-        intentMap.set('test', test)
         intentMap.set('OrderDrinks - Counter - no', counterReject)
         intentMap.set('OrderDrinks - Counter - no - no', counterReject)
         intentMap.set('OrderDrinks - Offer Low - no', makeNewOffer)
