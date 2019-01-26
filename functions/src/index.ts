@@ -22,6 +22,10 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
     } else {
         // Access Granted
 
+        /**
+         * Should ordering food call dialogflow?
+         * or respond locally?
+         */
         function OrderFoodAck() {
             //trigger OrderFood intent
             //parameters to send = responseText
@@ -29,7 +33,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
 
         //get parameters from request
         //check prediction and call appropriate intent
-        async function OrderDrinks() {
+        async function orderDrinks() {
 
             const parameters = request.body.queryResult.parameters
 
@@ -53,7 +57,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
              */
         }
 
-        const OUTPUT_CONTEXT_NAME = "projects/priceprediction-8026a/agent/sessions/3aae4089-88cb-9f23-b240-54545ca1bed5/contexts/orderdrinks-followup"
+        const OUTPUT_CONTEXT_NAME = "projects/priceprediction-8026a/agent/sessions/34af6554-953b-9165-8b4b-21a10f07a8fe/contexts/orderdrinks-followup"
         //increase the quantity and make new offer
         //call counter offer again
         async function counterReject() {
@@ -61,9 +65,9 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
 
             switch (displayName) {
                 case "OrderDrinks - Counter - no": {
-                    const queryResult = request.body.queryResult
+                    // const queryResult = request.body.queryResult
 
-                    const parameter = getParameters(queryResult)
+                    const parameter = getParameters()
                     /**
                      * TODO 
                      * higher quantity sometimes returns higher value
@@ -79,8 +83,8 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
                 }
                     break;
                 case "OrderDrinks - Counter - no - no": {
-                    const queryResult = request.body.queryResult
-                    const paramater = getParameters(queryResult)
+                    // const queryResult = request.body.queryResult
+                    const paramater = getParameters()
                     const quantityOld = paramater.quantityOld
                     paramater.quantity = quantityOld
                     paramater.quantityOld = ""
@@ -90,14 +94,13 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
             }
         }
 
-        function getParameters(queryResult) {
-            for (const outputContext of queryResult.outputContexts) {
-                if (outputContext.name === OUTPUT_CONTEXT_NAME) {
-                    return outputContext.parameters
-                }
+        function getParameters() {
+            const outputContext = request.body.queryResult.outputContexts
 
-            }
+            return outputContext[(outputContext.length) - 1].parameters
+
         }
+
 
         /**
          * TODO
@@ -134,20 +137,27 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
 
         }
 
-
+        //reset all contexts
         function orderDrinksCancel() {
-            //reset all contexts
+
+            const resObj = {
+                "outputContexts": []
+            }
+
+            response.json(resObj)
+
         }
 
         //Map functions with intents
         const intentMap = new Map()
-        intentMap.set('OrderDrinks', OrderDrinks)
+        intentMap.set('OrderDrinks', orderDrinks)
         intentMap.set('OrderDrinks - Counter - no', counterReject)
         intentMap.set('OrderDrinks - Counter - no - no', counterReject)
         intentMap.set('OrderDrinks - Offer Low - no', makeNewOffer)
         intentMap.set('OrderDrinks - Accept - no', makeNewOffer)
         intentMap.set('OrderDrinks - Counter - no - no - no', makeNewOffer)
         intentMap.set('OrderDrinks - Taunt - NewOffer', makeNewOffer)
+        intentMap.set('OrderDrinks - Cancel', orderDrinksCancel)
 
 
         agent.handleRequest(intentMap)
