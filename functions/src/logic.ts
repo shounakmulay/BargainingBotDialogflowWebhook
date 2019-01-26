@@ -6,21 +6,22 @@ const PASSWORD = functions.config().webhookauth.id
 const MODEL_NAME = "price_prediction"
 
 //construct json object
-export async function buildJSONres(eventname: String, param: string = "", value1: any = "", param2: string = "",
-    value2: any = "", param3: string = "", value3: any = "") {
+export async function buildJSONres(eventname: string, param1: string = "", value1: any = "", extraparam1: string = "",
+    extravalue1: any = "", extraparam2: string = "", extravalue2: any = "") {
 
     const responseObj = {
         "followupEventInput": {
             "name": eventname,
             "parameters": {
-                [param]: value1,
-                [param2]: value2,
-                [param3]: value3
+                [param1]: value1,
+                [extraparam1]: extravalue1,
+                [extraparam2]: extravalue2
 
             }
         }
     }
     return responseObj
+
 }
 
 //authentication check
@@ -38,10 +39,10 @@ export function check(name, pass) {
 //return json
 export async function getResJSON(parameters) {
 
-    const currentCost = parameters.currentCost.amount
-    const quantityOld = parameters.quantityOld
-    const userOffer = parameters.cost.amount
-    const quantity = parameters.quantity
+    const currentCost: number = parameters.currentCost.amount
+    const quantityOld: number = parameters.quantityOld
+    const userOffer: number = parameters.cost.amount
+    const quantity: number = parameters.quantity
     let instanceArray: any[][]
 
     //initialize parameteres, set appropriate values and return an array in proper format
@@ -148,7 +149,7 @@ export async function getResJSON(parameters) {
     //check ml response and decide which intent to call
     if (getLowLim(predtictedCost, 2, 5) < userOffer && userOffer < getHighLim(predtictedCost, 2, 5)) {
         //accept useroffer
-        return await buildJSONres("OrderDrinks-AcceptEvent", "acceptedCost", userOffer)
+        return await buildJSONres("OrderDrinks-AcceptEvent", "predictedCost", userOffer)
     } else if (userOffer > predtictedCost) {
         //low amount offered by bot!
         return await buildJSONres("OrderDrinks-OfferLowEvent", "predictedCost", predtictedCost)
@@ -172,4 +173,28 @@ function getRandomInt(min, max) {
     const minval = Math.ceil(min);
     const maxval = Math.floor(max);
     return Math.floor(Math.random() * (maxval - minval + 1)) + min;
+}
+
+export function getDrinkName(parameters) {
+    let drink: string
+    if (parameters.beer !== "") {
+        drink = parameters.beer as string
+        return drink.substring(2)
+    } else if (parameters.whisky !== "") {
+        drink = parameters.whisky as string
+        return drink.substring(2)
+    } else if (parameters.vodka !== "") {
+        drink = parameters.vodka as string
+        return drink.substring(2)
+    } else {
+        drink = parameters.wine as string
+        return drink.substring(2)
+    }
+}
+
+export function getParameters(request) {
+    const outputContext = request.body.queryResult.outputContexts
+
+    return outputContext[(outputContext.length) - 1].parameters
+
 }

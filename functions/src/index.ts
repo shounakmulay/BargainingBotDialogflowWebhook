@@ -42,22 +42,24 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
             response.json(resJSON)
         }
 
-        function placeDrinksOrder() {
+        async function placeDrinksOrder() { // Not working for order drinks accept yes. Output context order changed.
+            //Find a way to propery get context info.
             /**
              * TODO
              * send response of placed order 
-             * update databases 
-             * trigger for 
-             * order drinks counter yes 
-             * order drinks counter no yes
-             * order drinks counter no no yes
-             * order drinks accept yes 
-             * order drinks offer low yes 
-             * order drinks taunt accept
+             * update databases
              */
+            const parameters = logic.getParameters(request)
+            const drinkName = logic.getDrinkName(parameters)
+            const quantity = parameters.quantity
+            const price = parameters.predictedCost
+
+            response.json(await logic.buildJSONres("PlaceDrinksOrderEvent", "drinkName", drinkName, "quantity", quantity, "price", price))
+
         }
 
-        const OUTPUT_CONTEXT_NAME = "projects/priceprediction-8026a/agent/sessions/34af6554-953b-9165-8b4b-21a10f07a8fe/contexts/orderdrinks-followup"
+
+
         //increase the quantity and make new offer
         //call counter offer again
         async function counterReject() {
@@ -67,7 +69,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
                 case "OrderDrinks - Counter - no": {
                     // const queryResult = request.body.queryResult
 
-                    const parameter = getParameters()
+                    const parameter = logic.getParameters(request)
                     /**
                      * TODO 
                      * higher quantity sometimes returns higher value
@@ -84,7 +86,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
                     break;
                 case "OrderDrinks - Counter - no - no": {
                     // const queryResult = request.body.queryResult
-                    const paramater = getParameters()
+                    const paramater = logic.getParameters(request)
                     const quantityOld = paramater.quantityOld
                     paramater.quantity = quantityOld
                     paramater.quantityOld = ""
@@ -94,12 +96,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
             }
         }
 
-        function getParameters() {
-            const outputContext = request.body.queryResult.outputContexts
 
-            return outputContext[(outputContext.length) - 1].parameters
-
-        }
 
 
         /**
@@ -158,7 +155,12 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
         intentMap.set('OrderDrinks - Counter - no - no - no', makeNewOffer)
         intentMap.set('OrderDrinks - Taunt - NewOffer', makeNewOffer)
         intentMap.set('OrderDrinks - Cancel', orderDrinksCancel)
-
+        intentMap.set('OrderDrinks - Counter - yes', placeDrinksOrder)
+        intentMap.set('OrderDrinks - Counter - no - yes', placeDrinksOrder)
+        intentMap.set('OrderDrinks - Counter - no - no - yes', placeDrinksOrder)
+        intentMap.set('OrderDrinks - Accept - yes', placeDrinksOrder)
+        intentMap.set('OrderDrinks - Offer Low - yes', placeDrinksOrder)
+        intentMap.set('OrderDrinks - Taunt - Accept', placeDrinksOrder)
 
         agent.handleRequest(intentMap)
 
