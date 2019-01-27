@@ -193,8 +193,9 @@ export function getDrinkName(parameters) {
 }
 
 export function getParameters(request) {
-    const outputContext = request.body.queryResult.outputContexts
-
-    return outputContext[(outputContext.length) - 1].parameters
-
+    for (const context of request.body.queryResult.outputContexts) {
+        if (context.name.split("/").pop() === "orderdrinks-followup") {
+            return context.parameters
+        }
+    }
 }

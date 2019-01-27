@@ -42,8 +42,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
             response.json(resJSON)
         }
 
-        async function placeDrinksOrder() { // Not working for order drinks accept yes. Output context order changed.
-            //Find a way to propery get context info.
+        async function placeDrinksOrder() {
             /**
              * TODO
              * send response of placed order 
