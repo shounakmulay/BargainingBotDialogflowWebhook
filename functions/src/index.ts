@@ -4,10 +4,12 @@ import * as logic from "./logic"
 const { WebhookClient } = require('dialogflow-fulfillment')
 const admin = require('firebase-admin')
 const auth = require('basic-auth')
-admin.initializeApp()
+admin.initializeApp(functions.config().firebase)
 
-
-
+/**
+ * Add response suggestions?
+ * const{Card , Suggestions} = require('dialogflow-fulfillment')
+ */
 //Cloud Function
 export const dialogflowFirebaseFulfillment = functions.https.onRequest((request, response) => {
 
@@ -22,13 +24,17 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
     } else {
         // Access Granted
 
+
+
         /**
          * Should ordering food call dialogflow?
          * or respond locally?
+         * add cards?
          */
         function OrderFoodAck() {
             //trigger OrderFood intent
             //parameters to send = responseText
+
         }
 
         //get parameters from request
@@ -38,22 +44,25 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
             const parameters = request.body.queryResult.parameters
 
             const resJSON = await logic.getResJSON(parameters)
-
             response.json(resJSON)
         }
 
         async function placeDrinksOrder() {
-            /**
-             * TODO
-             * send response of placed order 
-             * update databases
-             */
+
             const parameters = logic.getParameters(request)
             const drinkName = logic.getDrinkName(parameters)
             const quantity = parameters.quantity
             const price = parameters.predictedCost
+            const uid = parameters.uid
 
-            response.json(await logic.buildJSONres("PlaceDrinksOrderEvent", "drinkName", drinkName, "quantity", quantity, "price", price))
+            const addDrinksPromise = logic.addDrinksOrderToDb(uid, drinkName, quantity, price)
+
+            const buildJSONPromise = logic.buildJSONres("PlaceDrinksOrderEvent", "drinkName", drinkName, "quantity", quantity, "price", price)
+
+            await Promise.all([addDrinksPromise, buildJSONPromise])
+                .then(([voidRes, JSONRes]) => response.json(JSONRes))
+                .catch((reason) => console.error("Promise.all rejected : " + reason))
+
 
         }
 
@@ -69,11 +78,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
                     // const queryResult = request.body.queryResult
 
                     const parameter = logic.getParameters(request)
-                    /**
-                     * TODO 
-                     * higher quantity sometimes returns higher value
-                     * check logic
-                     */
+
                     let quantity = parameter.quantity
                     parameter.quantityOld = quantity
                     quantity = Math.round((quantity + ((quantity * Math.random()) + 1)))
@@ -102,6 +107,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
          * TODO
          * notify android to change ui for new offer?
          * reset contexts
+         * use pub/sub?
          */
         async function makeNewOffer() {
 
@@ -166,5 +172,3 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
 
     }
 })
-
-
