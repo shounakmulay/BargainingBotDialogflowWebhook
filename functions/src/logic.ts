@@ -42,7 +42,9 @@ export async function getResJSON(parameters) {
     const currentCost: number = parameters.currentCost.amount
     const quantityOld: number = parameters.quantityOld
     const userOffer: number = parameters.cost.amount
-    const quantity: number = parameters.quantity
+    const quantityTemp: number = parameters.quantity
+    const quantity = parseInt(quantityTemp.toString())
+
     let instanceArray: any[][]
 
     //initialize parameteres, set appropriate values and return an array in proper format
@@ -141,7 +143,6 @@ export async function getResJSON(parameters) {
         "model": MODEL_NAME,
         "instances": instanceArray
     }
-
     const prediction: any = await model.getPrediction(data)
 
     const predtictedCost = Math.round(prediction.predictions[0].outputs[0])

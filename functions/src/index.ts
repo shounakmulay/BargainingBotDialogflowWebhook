@@ -79,10 +79,14 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
 
                     const parameter = logic.getParameters(request)
 
-                    let quantity = parameter.quantity
+                    let quantity = parseInt(parameter.quantity)
+                    console.log(quantity)
                     parameter.quantityOld = quantity
+
                     quantity = Math.round((quantity + ((quantity * Math.random()) + 1)))
-                    parameter.quantity = quantity
+
+                    parameter.quantity = parseInt(quantity.toString())
+
 
 
                     response.json(await logic.getResJSON(parameter))
@@ -91,7 +95,7 @@ export const dialogflowFirebaseFulfillment = functions.https.onRequest((request,
                 case "OrderDrinks - Counter - no - no": {
                     // const queryResult = request.body.queryResult
                     const paramater = logic.getParameters(request)
-                    const quantityOld = paramater.quantityOld
+                    const quantityOld = parseInt(paramater.quantityOld)
                     paramater.quantity = quantityOld
                     paramater.quantityOld = ""
 
