@@ -202,14 +202,10 @@ export function getParameters(request) {
 }
 
 export async function addDrinksOrderToDb(uid: string, drinkName: string, quantity: number, price: number) {
-    const d = new Date()
-    const utc = d.getTime() + (d.getTimezoneOffset() * 60000)
-    const nd = new Date(utc + (3600000 * 5.5))
     const data = {
         collectionName: 'Orders',
         data: {
             userid: uid,
-            date: nd,
             drinks: {
                 name: drinkName,
                 price: price,
