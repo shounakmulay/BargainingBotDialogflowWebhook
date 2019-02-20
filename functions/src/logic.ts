@@ -7,7 +7,7 @@ const MODEL_NAME = "price_prediction"
 
 //construct json object
 export async function buildJSONres(eventname: string, param1: string = "", value1: any = "", extraparam1: string = "",
-    extravalue1: any = "", extraparam2: string = "", extravalue2: any = "") {
+    extravalue1: any = "", extraparam2: string = "", extravalue2: any = "", extraparam3: string = "", extravalue3: any = "") {
 
     const responseObj = {
         "followupEventInput": {
@@ -15,7 +15,8 @@ export async function buildJSONres(eventname: string, param1: string = "", value
             "parameters": {
                 [param1]: value1,
                 [extraparam1]: extravalue1,
-                [extraparam2]: extravalue2
+                [extraparam2]: extravalue2,
+                [extraparam3]: extravalue3
 
             }
         }
@@ -44,6 +45,7 @@ export async function getResJSON(parameters) {
     const userOffer: number = parameters.cost.amount
     const quantityTemp: number = parameters.quantity
     const quantity = parseInt(quantityTemp.toString())
+    let drinkNameForRes: string = ""
 
     let instanceArray: any[][]
 
@@ -101,7 +103,14 @@ export async function getResJSON(parameters) {
         function setDrinkName(name: string) {
             if (drinkName.hasOwnProperty(name)) {
                 drinkName[name] = 1
+                getDrinkNameForRes(name)
             }
+        }
+
+
+        function getDrinkNameForRes(name: string) {
+            const drinkNameWithoutSpace = name.substr(2)
+            drinkNameForRes = drinkNameWithoutSpace.replace(/([A-Z])/g, ' $1').trim()
         }
 
         function setDay() {
@@ -159,7 +168,7 @@ export async function getResJSON(parameters) {
         return await buildJSONres("OrderDrinks-TauntEvent", "predictedCost", predtictedCost)
     } else {
         //counter
-        return await buildJSONres("OrderDrinks-CounterEvent", "predictedCost", predtictedCost, "quantity", quantity, "quantityOld", quantityOld)
+        return await buildJSONres("OrderDrinks-CounterEvent", "predictedCost", predtictedCost, "quantity", quantity, "quantityOld", quantityOld, "drinkName", drinkNameForRes)
     }
 }
 
