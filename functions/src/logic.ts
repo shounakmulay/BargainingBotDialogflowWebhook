@@ -159,13 +159,13 @@ export async function getResJSON(parameters) {
     //check ml response and decide which intent to call
     if (getLowLim(predtictedCost, 2, 5) < userOffer && userOffer < getHighLim(predtictedCost, 2, 5)) {
         //accept useroffer
-        return await buildJSONres("OrderDrinks-AcceptEvent", "predictedCost", userOffer)
+        return await buildJSONres("OrderDrinks-AcceptEvent", "predictedCost", userOffer, "quantity", quantity, "drinkName", drinkNameForRes)
     } else if (userOffer > predtictedCost) {
         //low amount offered by bot!
-        return await buildJSONres("OrderDrinks-OfferLowEvent", "predictedCost", predtictedCost)
+        return await buildJSONres("OrderDrinks-OfferLowEvent", "predictedCost", predtictedCost, "quantity", quantity, "drinkName", drinkNameForRes)
     } else if (userOffer < getLowLim(currentCost, 35, 40)) {
         //taunt user for too low offer
-        return await buildJSONres("OrderDrinks-TauntEvent", "predictedCost", predtictedCost)
+        return await buildJSONres("OrderDrinks-TauntEvent", "predictedCost", predtictedCost, "quantity", quantity, "drinkName", drinkNameForRes)
     } else {
         //counter
         return await buildJSONres("OrderDrinks-CounterEvent", "predictedCost", predtictedCost, "quantity", quantity, "quantityOld", quantityOld, "drinkName", drinkNameForRes)
