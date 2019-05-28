@@ -6,7 +6,6 @@ This is the part of the system that provides logic to the bot. This functions ta
 The model this functions calls to get the price for bargaining is a **[Tensorflow model](https://github.com/shounakmulay/BargainingBotTensorflowModel)** deployed on **Cloud ML Engine**.
 This function takes the parameters from the JSON request and formats it to the request array for prediction. Then it triggers the appropriate intent of Dialogflow with the received prediction from the ML model.
 
-### View the entire System Architecture [here](https://github.com/shounakmulay/BargainingBot)
 
 ##
 
